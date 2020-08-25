@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:the_seller/Controllers/databasehelper.dart';
+import 'package:the_seller/UI/ShowData.dart';
 
 class ControlPanel extends StatefulWidget {
   @override
@@ -68,16 +69,23 @@ class ItemList extends StatelessWidget {
         itemBuilder: (context, i){
           return Container(
             padding: const EdgeInsets.only(bottom: 4),
-            child: Card(
-              child: ListTile(
-                title: Text(list[i]['ToolName']),
-                leading: Image.network('https://the-seller20200630093320.azurewebsites.net/Images/${list[i]['PictureLink']}'
-                ,height: 50.0,
-                width: 50.0,),
-                subtitle: Text ('${list[i]['ToolDes']}'),
-                trailing: Text ('\$${list[i]['ToolPrice']}'),
+            child: GestureDetector(
+              onTap: ()=>Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (BuildContext context) => ShowData(list:list, index:i),
+                )
               ),
-              color: Colors.white70,
+              child: Card(
+                child: ListTile(
+                  title: Text(list[i]['ToolName']),
+                  leading: Image.network('https://the-seller20200630093320.azurewebsites.net/Images/${list[i]['PictureLink']}'
+                  ,height: 50.0,
+                  width: 50.0,),
+                  subtitle: Text ('${list[i]['ToolDes']}'),
+                  trailing: Text ('\$${list[i]['ToolPrice']}'),
+                ),
+                color: Colors.white70,
+              ),
             ),
           );
         }

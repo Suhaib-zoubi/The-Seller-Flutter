@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:the_seller/UI/Login.dart';
 
 class DatabaseHelper {
   String serverUrl =
@@ -54,6 +55,10 @@ class DatabaseHelper {
     final key = 'UserID';
     userId = prefs.get(key) ?? "empty";
     print('TEST read : $userId');
-    if (userId == "empty") Navigator.pushReplacementNamed(context, '/login');
+    if (userId == "empty") Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (BuildContext context) => Login(),
+        )
+    );
   }
 }

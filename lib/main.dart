@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:the_seller/UI/Login.dart';
 import 'package:the_seller/UI/Register.dart';
 import 'UI/ControlPanel.dart';
+import 'UI/ShowData.dart';
 
 void main() => runApp(MyApp());
 
@@ -16,6 +17,7 @@ class MyApp extends StatelessWidget {
         '/register': (BuildContext) => Register(),
         '/login': (BuildContext) => Login(),
         '/controlPanel': (BuildContext) => ControlPanel(),
+        '/showData': (BuildContext) => ShowData(),
       },
     );
   }
