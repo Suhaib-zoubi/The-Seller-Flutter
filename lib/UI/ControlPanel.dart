@@ -39,6 +39,48 @@ class ControlPanelState extends State<ControlPanel> {
               )
             ],
           ),
+          body: FutureBuilder<List>(
+            future: databaseHelper.getToolListing(DatabaseHelper.userId),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) print(snapshot.error);
+              return snapshot.hasData
+                  ? ItemList(list: snapshot.data)
+                  : Center(
+                      child: new CircularProgressIndicator(),
+                    );
+            },
+          ),
         ));
+  }
+}
+
+class ItemList extends StatelessWidget {
+  List list;
+
+  ItemList({this.list});
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return ListView.builder(
+      padding: EdgeInsets.all(7.0),
+        itemCount: list.length,
+        itemBuilder: (context, i){
+          return Container(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Card(
+              child: ListTile(
+                title: Text(list[i]['ToolName']),
+                leading: Image.network('https://the-seller20200630093320.azurewebsites.net/Images/${list[i]['PictureLink']}'
+                ,height: 50.0,
+                width: 50.0,),
+                subtitle: Text ('${list[i]['ToolDes']}'),
+                trailing: Text ('\$${list[i]['ToolPrice']}'),
+              ),
+              color: Colors.white70,
+            ),
+          );
+        }
+    );
   }
 }

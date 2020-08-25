@@ -28,6 +28,20 @@ class DatabaseHelper {
     return res;
   }
 
+  /*
+  https://the-seller20200630093320.azurewebsites.net/UsersWS.asmx/GetToolListing?
+  UserID=1&Distance=5000&From=1&to=10&ToolTypeID=1&ToolID=0&q=@
+   */
+
+  Future<List> getToolListing(String userId) async {
+    String myUrl = '$serverUrl/GetToolListing?'
+        'UserID=${userId}&Distance=5000&From=0&to=100&ToolTypeID=0&ToolID=0&q=@';
+    http.Response response = await http.get(myUrl);
+    final res = json.decode(response.body);
+    print('TEST ToolData');
+    print(res["ToolData"]);
+    return res["ToolData"];
+  }
   save(String userID) async {
     final prefs = await SharedPreferences.getInstance();
     final key = 'UserID';
