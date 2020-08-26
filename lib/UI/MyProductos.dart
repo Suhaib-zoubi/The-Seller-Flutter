@@ -1,18 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:the_seller/Controllers/databasehelper.dart';
-import 'package:the_seller/UI/MyProductos.dart';
 import 'package:the_seller/UI/ShowData.dart';
 
-class ControlPanel extends StatefulWidget {
+class MyProducts extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
     // TODO: implement createState
-    return ControlPanelState();
+    return MyProductsState();
   }
 }
 
-class ControlPanelState extends State<ControlPanel> {
+class MyProductsState extends State<MyProducts> {
   DatabaseHelper databaseHelper = DatabaseHelper();
 
   @override
@@ -30,32 +29,10 @@ class ControlPanelState extends State<ControlPanel> {
           appBar: AppBar(
             backgroundColor: Color(0xFF104454),
             title: Text("The Seller"),
-            actions: [
-              IconButton(
-                icon: Icon(Icons.logout),
-                onPressed: () {
-                  DatabaseHelper databaseHelper = DatabaseHelper();
-                  databaseHelper.save("empty");
-                  databaseHelper.loadData(context);
-                },
-              )
-            ],
-          ),
-          bottomNavigationBar: Container(
-            child: FlatButton(
-              child: Text(
-                'My Products',
-                style: TextStyle(
-                  color: Colors.white,
-                ),
-              ),
-              onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (BuildContext) => MyProducts())),
-            ),
-            color: Colors.deepOrange,
+            actions: [],
           ),
           body: FutureBuilder<List>(
-            future: databaseHelper.getToolListing(DatabaseHelper.userId),
+            future: databaseHelper.getMyTools(DatabaseHelper.userId),
             builder: (context, snapshot) {
               if (snapshot.hasData) print(snapshot.error);
               return snapshot.hasData
@@ -84,10 +61,6 @@ class ItemList extends StatelessWidget {
           return Container(
             padding: const EdgeInsets.only(bottom: 4),
             child: GestureDetector(
-              onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                builder: (BuildContext context) =>
-                    ShowData(list: list, index: i),
-              )),
               child: Card(
                 child: ListTile(
                   title: Text(list[i]['ToolName']),
