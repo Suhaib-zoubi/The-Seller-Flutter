@@ -31,7 +31,7 @@ class ShowDataState extends State<ShowData> {
         body: ListView(
           padding: const EdgeInsets.only(top: 15.0,left: 12.0,right: 12.0,bottom: 12.0),
           children: [
-        Image.network('https://the-seller20200630093320.azurewebsites.net/Images/${widget.list[widget.index]['PictureLink']}'
+        Image.network('https://the-seller20200630093320.azurewebsites.net/Images/123456789H8272020100504.jpg'
           ,height: 200.0,
           width: 200.0,),
             new Padding(padding: new EdgeInsets.only(top: 44.0),),

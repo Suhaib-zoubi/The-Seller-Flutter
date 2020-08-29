@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:the_seller/Controllers/databasehelper.dart';
-import 'package:the_seller/UI/ShowData.dart';
+
+import 'AddProduct.dart';
 
 class MyProducts extends StatefulWidget {
   @override
@@ -30,6 +31,14 @@ class MyProductsState extends State<MyProducts> {
             backgroundColor: Color(0xFF104454),
             title: Text("The Seller"),
             actions: [],
+          ),
+          floatingActionButton: new FloatingActionButton(
+            child: new Icon(Icons.add),
+            onPressed: ()=>Navigator.of(context).push(
+                new MaterialPageRoute(
+                  builder: (BuildContext context) =>  AddProduct(),
+                )
+            ),
           ),
           body: FutureBuilder<List>(
             future: databaseHelper.getMyTools(DatabaseHelper.userId),

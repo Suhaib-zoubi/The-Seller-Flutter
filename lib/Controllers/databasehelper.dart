@@ -1,10 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:the_seller/UI/Login.dart';
-
+import 'package:xml_parser/xml_parser.dart';
+import 'package:path/path.dart';
+import 'package:async/async.dart';
 class DatabaseHelper {
   String serverUrl =
       "https://the-seller20200630093320.azurewebsites.net/UsersWS.asmx";
@@ -46,6 +49,27 @@ class DatabaseHelper {
     print('TEST ToolData');
     print(res["ToolData"]);
     return res["ToolData"];
+  }
+
+    UploadImage(String image, String tempToolID) async {
+      String myUrl = '$serverUrl/UploadImage';
+      http.post(myUrl,body: {
+        "image": image,
+        "TempToolID" : tempToolID
+      }).then((response) {
+        print('Response status : ${response.statusCode}');
+        print('Response body : ${response.body}');
+      });
+  }
+
+  AddTools(String userID, String toolName, String toolDes, String toolPrice
+      , String toolTypeID, String tempToolID) async {
+    String myUrl = '$serverUrl/AddTools?'
+        'UserID=$userId&ToolName=$toolName&ToolDes=$toolDes&ToolPrice=$toolPrice&ToolTypeID=$toolTypeID&TempToolID=$tempToolID';
+    http.Response response = await http.get(myUrl);
+    final res = json.decode(response.body);
+    print('url: $myUrl');
+    print('AddTools: ${res["IsAdded"]}');
   }
 
   save(String userID) async {
