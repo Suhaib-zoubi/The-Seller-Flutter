@@ -34,11 +34,10 @@ class MyProductsState extends State<MyProducts> {
           ),
           floatingActionButton: new FloatingActionButton(
             child: new Icon(Icons.add),
-            onPressed: ()=>Navigator.of(context).push(
-                new MaterialPageRoute(
-                  builder: (BuildContext context) =>  AddProduct(),
-                )
-            ),
+            onPressed: () => Navigator.of(context).push(new MaterialPageRoute(
+              builder: (BuildContext context) =>
+                  AddProduct(null, '', '', '', null),
+            )),
           ),
           body: FutureBuilder<List>(
             future: databaseHelper.getMyTools(DatabaseHelper.userId),
@@ -55,33 +54,59 @@ class MyProductsState extends State<MyProducts> {
   }
 }
 
-class ItemList extends StatelessWidget {
+class ItemList extends StatefulWidget {
   List list;
 
   ItemList({this.list});
+
+  @override
+  State<StatefulWidget> createState() {
+    // TODO: implement createState
+    return ItenListState();
+  }
+}
+
+class ItenListState extends State<ItemList> {
+  DatabaseHelper databaseHelper = DatabaseHelper();
 
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
     return ListView.builder(
         padding: EdgeInsets.all(7.0),
-        itemCount: list.length,
+        itemCount: widget.list.length,
         itemBuilder: (context, i) {
           return Container(
             padding: const EdgeInsets.only(bottom: 4),
             child: GestureDetector(
-              child: Card(
+              onTap: () => Navigator.of(context).push(new MaterialPageRoute(
+                builder: (BuildContext context) => AddProduct(
+                    widget.list[i]['ToolID'],
+                    widget.list[i]['ToolName'],
+                    widget.list[i]['ToolDes'],
+                    widget.list[i]['ToolPrice'],
+                    widget.list[i]['PictureLink']),
+              )),
+              onDoubleTap: () => print(i),
+              child: Dismissible(
+                key: UniqueKey(),
                 child: ListTile(
-                  title: Text(list[i]['ToolName']),
+                  title: Text(widget.list[i]['ToolName']),
                   leading: Image.network(
-                    'https://the-seller20200630093320.azurewebsites.net/Images/${list[i]['PictureLink']}',
+                    'https://the-seller20200630093320.azurewebsites.net/Images/${widget.list[i]['PictureLink']}',
                     height: 50.0,
                     width: 50.0,
                   ),
-                  subtitle: Text('${list[i]['ToolDes']}'),
-                  trailing: Text('\$${list[i]['ToolPrice']}'),
+                  subtitle: Text('${widget.list[i]['ToolDes']}'),
+                  trailing: Text('\$${widget.list[i]['ToolPrice']}'),
+                  tileColor: Colors.white70,
                 ),
-                color: Colors.white70,
+                onDismissed: (direction) {
+                  databaseHelper.DeleteTool(widget.list[i]['ToolID']);
+                  setState(() {
+                    widget.list.removeAt(i);
+                  });
+                },
               ),
             ),
           );
