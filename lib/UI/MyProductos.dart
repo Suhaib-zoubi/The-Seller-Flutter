@@ -24,16 +24,23 @@ class MyProductsState extends State<MyProducts> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
+    return Scaffold(
+          backgroundColor: Colors.white,
           appBar: AppBar(
-            backgroundColor: Color(0xFF104454),
-            title: Text("The Seller"),
-            actions: [],
+            elevation: 0.0,
+            title: Text(
+              'My Products',
+              style: TextStyle(
+                color: Color(0xFF13566b),
+                fontSize: 30.0,
+              ),
+            ),
+            centerTitle: true,
+            backgroundColor: Colors.white,
           ),
           floatingActionButton: new FloatingActionButton(
-            child: new Icon(Icons.add),
+            backgroundColor: Colors.grey[100],
+            child: new Icon(Icons.add,color: Color(0xFF13566b),size: 35.0,),
             onPressed: () => Navigator.of(context).push(new MaterialPageRoute(
               builder: (BuildContext context) =>
                   AddProduct(null, '', '', '', null),
@@ -49,7 +56,6 @@ class MyProductsState extends State<MyProducts> {
                       child: new CircularProgressIndicator(),
                     );
             },
-          ),
         ));
   }
 }
@@ -92,10 +98,21 @@ class ItenListState extends State<ItemList> {
                 key: UniqueKey(),
                 child: ListTile(
                   title: Text(widget.list[i]['ToolName']),
-                  leading: Image.network(
+                  leading: (widget.list[i]['PictureLink']==null || widget.list[i]['PictureLink']=='')
+                      ? Icon (
+                    Icons.announcement,
+                    size: 60.0,
+                  )
+                      : Image.network(
                     'https://the-seller20200630093320.azurewebsites.net/Images/${widget.list[i]['PictureLink']}',
-                    height: 50.0,
-                    width: 50.0,
+                    height: 80.0,
+                    width: 80.0,
+                    loadingBuilder: (context,child,progress){
+                      return progress==null
+                          ? child
+                          : Container(child: CircularProgressIndicator(),
+                        width: 80.0,height: 80.0,);
+                    },
                   ),
                   subtitle: Text('${widget.list[i]['ToolDes']}'),
                   trailing: Text('\$${widget.list[i]['ToolPrice']}'),

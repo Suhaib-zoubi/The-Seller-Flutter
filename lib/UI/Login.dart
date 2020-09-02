@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:the_seller/Controllers/databasehelper.dart';
+import 'package:the_seller/UI/ControlPanel.dart';
+import 'package:the_seller/UI/Register.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -16,6 +18,9 @@ class LoginState extends State<Login> {
   var result = "";
   DatabaseHelper databaseHelper = DatabaseHelper();
   var isPressed;
+  var _currentIndex = 0;
+  var _showValidationUserNameError = false;
+  var _showValidationPasswordError = false;
 
   @override
   void initState() {
@@ -23,6 +28,28 @@ class LoginState extends State<Login> {
     super.initState();
     databaseHelper.save("empty");
     isPressed = false;
+  }
+
+  _updateUserNameValue(String text) {
+    if (text == '' || text.isEmpty)
+      setState(() {
+        _showValidationUserNameError = true;
+      });
+    else
+      setState(() {
+        _showValidationUserNameError = false;
+      });
+  }
+
+  _updatePasswordValue(String text) {
+    if (text == '')
+      setState(() {
+        _showValidationPasswordError = true;
+      });
+    else
+      setState(() {
+        _showValidationPasswordError = false;
+      });
   }
 
   void _onLogin() async {
@@ -37,119 +64,289 @@ class LoginState extends State<Login> {
         .loginData(
             _username.text.trim().toString(), _password.text.trim().toString())
         .then((value) {
-      if (DatabaseHelper.userId == "0") {
+      print('userID; ${DatabaseHelper.userId}');
+      print('value= $value');
+      if (value == null)
         setState(() {
-          isPressed = false;
-          result = value;
-          print('**************$result*************');
-          print('**************${DatabaseHelper.userId}*************');
-        });
-        print('here');
-      } else {
-        setState(() {
+          result = "Oh no! We can't connect right now!";
           isPressed = false;
         });
-        Navigator.pushReplacementNamed(context, '/controlPanel');
-        print('here2');
-        print(DatabaseHelper.userId);
-      }
-    });
+      else {
+        if (value["UserID"].toString() == '0') {
+          setState(() {
+            result = value["Message"];
+
+            print('**************$result*************');
+            print('**************${value["UserID"]}*************');
+          });
+          print('here');
+        }
+        else {
+          print('**************${value["UserID"]}*************');
+          setState(() {
+            isPressed = false;
+            _showValidationUserNameError = false;
+            _showValidationPasswordError = false;
+          });
+          Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (BuildContext) => ControlPanel(),
+          ));
+          print('here2');
+          print(DatabaseHelper.userId);
+        }
+      }});
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Color(0xFF104454),
-          title: Text("The Seller"),
-        ),
-        body: Container(
-          child: ListView(
-            children: <Widget>[
-              Image.asset(
-                'images/back_login.jpg',
-                height: 256.0,
-                width: 300.0,
-                fit: BoxFit.fill,
-              ),
-              Container(
-                margin: EdgeInsets.all(15.0),
-                padding: EdgeInsets.all(12.0),
-                child: Column(
-                  children: <Widget>[
+  portraitLogin(){
+    return  Center(
+        child: SingleChildScrollView(
+          child: Container(
+            color: Colors.white,
+            child: Padding(
+              padding: EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    'Complete your shopping',
+                    style: TextStyle(
+                        fontSize: 20.0,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.bold),
+                  ),
+                  Padding(padding: EdgeInsets.all(16.0)),
                     TextField(
-                      style: TextStyle(
-                        color: Colors.black,
-                      ),
+                      style: Theme.of(context).textTheme.display1,
+                      autofocus: false,
+                      // TextStyle(color: Color(0xFF13566b))
                       decoration: InputDecoration(
-                        labelStyle: TextStyle(color: Color(0xFF13566b)),
-                        hintText: "Enter your name",
+                        labelStyle: Theme.of(context).textTheme.display1,
                         labelText: "User Name",
+                        errorText: _showValidationUserNameError
+                            ? 'Invalid UserName entered'
+                            : null,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(7.0),
+                          borderRadius: BorderRadius.circular(0.0),
                         ),
                       ),
+                      onChanged: _updateUserNameValue,
                       controller: _username,
                     ),
-                    Container(
-                      margin: EdgeInsets.only(top: 10.0),
-                      child: TextField(
-                        style: TextStyle(
-                          color: Colors.black,
+                  Container(
+                    margin: EdgeInsets.only(top: 16.0),
+                    child: TextField(
+                      style: Theme.of(context).textTheme.display1,
+                      autofocus: false,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelStyle: Theme.of(context).textTheme.display1,
+                        labelText: "Password",
+                        errorText: _showValidationPasswordError
+                            ? 'Invalid Password entered'
+                            : null,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(0.0),
                         ),
+                      ),
+                      onChanged: _updatePasswordValue,
+                      controller: _password,
+                    ),
+                  ),
+                  Padding(padding: EdgeInsets.all(16.0)),
+                  Container(
+                    decoration: BoxDecoration(
+                      // This sets the color of the [DropdownButton] itself
+                      color: Colors.grey[50],
+                      border: Border.all(
+                        color: Colors.grey[400],
+                        width: 1.0,
+                      ),
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.arrow_forward),
+                      iconSize: 50.0,
+                      onPressed: (_password.text.isEmpty || _username.text.isEmpty)
+                          ?null
+                          :_onLogin,
+                    ),
+                  ),
+                  Center(
+                    child: Container(
+                      margin: EdgeInsets.only(top: 20.0),
+                      padding: EdgeInsets.all(3.0),
+                      child: isPressed
+                          ? CircularProgressIndicator()
+                          : Text(
+                        "$result",
+                        style:
+                        TextStyle(fontSize: 19.0, color: Colors.pink),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ),
+      ),
+    );
+  }
+
+  landscapeLogin(){
+    return  Center(
+      child: SingleChildScrollView(
+        child: Container(
+          color: Colors.white,
+          child: Padding(
+            padding: EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
+            child: Column(
+
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                  'Complete your shopping',
+                  style: TextStyle(
+                      fontSize: 20.0,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.bold),
+                ),
+                Padding(padding: EdgeInsets.all(16.0)),
+                Row(
+                  children: [
+                    Expanded(child: Column(children: [
+                      TextField(
+//                        style: Theme.of(context).textTheme.display1,
+                        // TextStyle(color: Color(0xFF13566b))
                         decoration: InputDecoration(
-                          labelStyle: TextStyle(color: Color(0xFF13566b)),
-                          hintText: "Enter your password",
-                          labelText: "Password",
+//                          labelStyle: Theme.of(context).textTheme.display1,
+                          labelText: "User Name",
+                          errorText: _showValidationUserNameError
+                              ? 'Invalid UserName entered'
+                              : null,
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(7.0),
+                            borderRadius: BorderRadius.circular(0.0),
                           ),
                         ),
-                        controller: _password,
+                        onChanged: _updateUserNameValue,
+                        controller: _username,
                       ),
-                    ),
-                    Container(
-                      width: 300.0,
-                      margin: EdgeInsets.only(top: 20.0),
-                      padding: EdgeInsets.all(3.0),
-                      child: RaisedButton(
-                        color: Color(0xFF104454),
-                        textColor: Colors.white,
-                        onPressed: () => _onLogin(),
-                        child: new Text('Login'),
-                        elevation: 7.0,
+                      Container(
+                        margin: EdgeInsets.only(top: 16.0),
+                        child: TextField(
+//                          style: Theme.of(context).textTheme.display1,
+                          autofocus: false,
+                          obscureText: true,
+                          decoration: InputDecoration(
+//                            labelStyle: Theme.of(context).textTheme.display1,
+                            labelText: "Password",
+                            errorText: _showValidationPasswordError
+                                ? 'Invalid Password entered'
+                                : null,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(0.0),
+                            ),
+                          ),
+                          onChanged: _updatePasswordValue,
+                          controller: _password,
+                        ),
                       ),
-                    ),
-                    Container(
-                      width: 300.0,
-                      margin: EdgeInsets.only(top: 20.0),
-                      padding: EdgeInsets.all(3.0),
-                      child: RaisedButton(
-                        color: Color(0xFF104454),
-                        textColor: Colors.white,
-                        onPressed: () =>
-                            Navigator.pushNamed(context, '/register'),
-                        child: new Text('Register'),
-                        elevation: 7.0,
+
+                    ],)),
+                    Expanded(child: Column( children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          // This sets the color of the [DropdownButton] itself
+                          color: Colors.grey[50],
+                          border: Border.all(
+                            color: Colors.grey[400],
+                            width: 1.0,
+                          ),
+                        ),
+                        child: IconButton(
+                          icon: Icon(Icons.arrow_forward),
+                          iconSize: 50.0,
+                          onPressed: (_password.text.isEmpty || _username.text.isEmpty)
+                              ?null
+                              :_onLogin,
+                        ),
                       ),
-                    ),
+                      Center(
+                        child: Container(
+                          margin: EdgeInsets.only(top: 20.0),
+                          padding: EdgeInsets.all(3.0),
+                          child: isPressed
+                              ? CircularProgressIndicator()
+                              : Text(
+                            "$result",
+                            style:
+                            TextStyle(fontSize: 19.0, color: Colors.pink),
+                          ),
+                        ),
+                      ),
+                    ],))
+
                   ],
                 ),
-              ),
-              Center(
-                child: Container(
-                  margin: EdgeInsets.only(top: 20.0),
-                  padding: EdgeInsets.all(3.0),
-                  child: isPressed
-                      ? CircularProgressIndicator()
-                      : Text(
-                          "$result",
-                          style: TextStyle(fontSize: 19.0, color: Colors.pink),
-                        ),
-                ),
-              )
-            ],
+
+              ],
+            ),
           ),
-        ));
+        ),
+      ),
+    );
+  }
+  @override
+   build(BuildContext context) {
+      tab (int index, Orientation orientation) {
+     final _tab = [
+      (orientation == Orientation.portrait)
+      ? portraitLogin()
+      : landscapeLogin(),
+     Register(),
+     ];
+     return _tab[index];
+    }
+    assert(debugCheckHasMediaQuery(context));
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        elevation: 0.0,
+        title: Text(
+          _currentIndex == 0 ? 'Login' : 'Register',
+          style: TextStyle(
+            color: Color(0xFF13566b),
+            fontSize: 30.0,
+          ),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        type: BottomNavigationBarType.fixed,
+        selectedItemColor: Color(0xFF13566b),
+        selectedIconTheme: IconThemeData(size: 50.0),
+        selectedFontSize: 15.0,
+        items: [
+          BottomNavigationBarItem(
+              icon: Icon(Icons.login),
+              title: Text(
+                'Login',
+              ),
+              backgroundColor: Colors.red),
+          BottomNavigationBarItem(
+              title: Text(
+                'Register',
+              ),
+              icon: Icon(Icons.app_registration),
+              backgroundColor: Colors.deepPurple),
+        ],
+        onTap: (i) {
+          setState(() {
+            _currentIndex = i;
+          });
+        },
+      ),
+      body: tab(_currentIndex,MediaQuery.of(context).orientation),
+    );
   }
 }

@@ -32,6 +32,8 @@ dependencies:
   shared_preferences: ^0.5.10
   xml_parser: ^0.1.2
   image_picker: ^0.6.7+7
+  cached_network_image: ^2.3.1
+  connectivity: ^0.3.2
 
 
 dev_dependencies:
@@ -69,7 +71,10 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
+  fonts:
+    - family: Raleway
+      fonts:
+        - asset: fonts/Raleway-Regular.ttf
   #   - family: Schyler
   #     fonts:
   #       - asset: fonts/Schyler-Regular.ttf

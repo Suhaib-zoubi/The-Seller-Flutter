@@ -67,7 +67,6 @@ class AddProductState extends State<AddProduct> {
         });
 
         print('elseStatement');
-//        print('_pictureLinkDatabase ${databaseHelper.UploadImage(base64Image, tempToolID)}');
         print('_pictureLink0 ${widget._product_pictureLink}');
       }
     }
@@ -97,13 +96,21 @@ class AddProductState extends State<AddProduct> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
+    return Scaffold(
+        backgroundColor: Colors.white,
         appBar: AppBar(
-          backgroundColor: Color(0xFF104454),
-          title: Text("The Seller"),
-          actions: [],
+          elevation: 0.0,
+          title: Text(
+            (widget._product_toolId==null)
+                ? 'Add Product'
+                : 'Edit Product',
+            style: TextStyle(
+              color: Color(0xFF13566b),
+              fontSize: 30.0,
+            ),
+          ),
+          centerTitle: true,
+          backgroundColor: Colors.white,
         ),
         body: ListView(
           padding: EdgeInsets.all(15.0),
@@ -128,6 +135,7 @@ class AddProductState extends State<AddProduct> {
               style: TextStyle(fontSize: 15.0, color: Colors.black),
               controller: _product_price,
               decoration: InputDecoration(labelText: 'Price'),
+              keyboardType: TextInputType.number,
             ),
             Padding(
               padding: EdgeInsets.only(top: 8.0),
@@ -168,7 +176,7 @@ class AddProductState extends State<AddProduct> {
           onPressed: picker,
           child: Icon(Icons.camera_alt),
         ),
-      ),
     );
   }
+
 }
