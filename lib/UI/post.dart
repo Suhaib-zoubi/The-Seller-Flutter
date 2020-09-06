@@ -19,7 +19,9 @@ class Post extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return  (post.dateAdd=='0')
+    ?  Container()
+    : InkWell(
 
       highlightColor: _baseColors['highlight'],
       splashColor: _baseColors['splash'],

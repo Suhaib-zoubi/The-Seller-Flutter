@@ -20,6 +20,7 @@ class RegisterState extends State<Register> {
    bool enable= false;
   var result = "";
   DatabaseHelper databaseHelper = DatabaseHelper();
+   var isPressed;
 
   @override
   void initState() {
@@ -31,6 +32,7 @@ class RegisterState extends State<Register> {
     setState(() {
       _username = new TextEditingController();
       _password = new TextEditingController();
+      isPressed = false;
     });
   }
 @override
@@ -41,19 +43,41 @@ class RegisterState extends State<Register> {
 
 }
   void _onRegister() async {
+    setState(() {
+      isPressed = true;
+      result = '';
+    });
+//    if (DatabaseHelper.connectivityResult){
+//
+//    } else {
+//
+//    }
+
     print(_username.text.trim().toString());
     print(_password.text.trim().toString());
     await (databaseHelper.registerData(
         _username.text.trim().toString(), _password.text.trim().toString()
         , _email.text.trim().toString(), _phoneNumber.text.trim().toString(),val.toString())
         .then((value) async {
-      print(value["IsAdded"]);
-      if (value["IsAdded"] == 0) {
+//      print(value["IsAdded"]);
+      print('valuRe $value');
+
+      if (value == null)
         setState(() {
+          result = "Oh no! We can't connect right now!";
+          isPressed = false;
+        });
+      else {if (value["IsAdded"] == 0) {
+        setState(() {
+          isPressed = false;
           print('**************${value["Message"]}*************');
           result = value["Message"];
         });
-      } else {
+      }
+      else {
+        setState(() {
+          isPressed = false;
+        });
         await databaseHelper
             .loginData(
             _username.text.trim().toString(), _password.text.trim().toString())
@@ -63,7 +87,7 @@ class RegisterState extends State<Register> {
             builder: (BuildContext) => ControlPanel(),
           ));
         });
-      }
+      }}
     }));
   }
 
@@ -198,14 +222,17 @@ class RegisterState extends State<Register> {
             ),
           ),
           Center(
-          child: Container(
-          margin: EdgeInsets.only(top: 20.0),
-    padding: EdgeInsets.all(3.0),
-    child: Text(
-    "$result",
-    style: TextStyle(fontSize: 19.0, color: Colors.pink),
-    ),
-    ),
+            child: Container(
+              margin: EdgeInsets.only(top: 20.0),
+              padding: EdgeInsets.all(3.0),
+              child: isPressed
+                  ? CircularProgressIndicator()
+                  : Text(
+                "$result",
+                style:
+                TextStyle(fontSize: 19.0, color: Colors.pink),
+              ),
+            ),
     )
     ],
     ),
@@ -222,8 +249,8 @@ class RegisterState extends State<Register> {
      1
    ];
    List listValue= [
-     'Female',
-     'Male'
+     'Male',
+     'Female'
    ];
    Widget _createDropdown() {
      return Container(

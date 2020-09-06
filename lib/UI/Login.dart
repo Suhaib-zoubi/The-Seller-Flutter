@@ -75,7 +75,7 @@ class LoginState extends State<Login> {
         if (value["UserID"].toString() == '0') {
           setState(() {
             result = value["Message"];
-
+            isPressed = false;
             print('**************$result*************');
             print('**************${value["UserID"]}*************');
           });

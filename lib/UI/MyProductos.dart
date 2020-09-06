@@ -1,27 +1,47 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:the_seller/Controllers/databasehelper.dart';
-
+import 'dart:async';
 import 'AddProduct.dart';
 
 class MyProducts extends StatefulWidget {
+
   @override
   State<StatefulWidget> createState() {
     // TODO: implement createState
     return MyProductsState();
   }
 }
-
-class MyProductsState extends State<MyProducts> {
+Future<List> list;
+class MyProductsState extends State<MyProducts> with WidgetsBindingObserver{
   DatabaseHelper databaseHelper = DatabaseHelper();
-
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     databaseHelper.loadData(context);
+    list =  databaseHelper.getMyTools(DatabaseHelper.userId);
   }
 
+  @override
+  Future<bool> didPopRoute() {
+    print('didPopRoute');
+
+  }
+
+  Future<Null> getData() async{
+    Completer<Null> completer=Completer<Null>();
+    await Future.delayed(Duration(seconds: 0));
+    setState(() {
+      list= databaseHelper.getMyTools(DatabaseHelper.userId).whenComplete(() {
+        completer.complete();
+      });
+    });
+    return completer.future;
+  }
+  getResumed(){
+    list= databaseHelper.getMyTools(DatabaseHelper.userId);
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,20 +63,33 @@ class MyProductsState extends State<MyProducts> {
             child: new Icon(Icons.add,color: Color(0xFF13566b),size: 35.0,),
             onPressed: () => Navigator.of(context).push(new MaterialPageRoute(
               builder: (BuildContext context) =>
-                  AddProduct(null, '', '', '', null),
-            )),
+                  AddProduct(null, '', '', '','','', null),
+            )).then((value) {
+              setState(() {
+                DatabaseHelper.mtProducts =1;
+
+              });
+              getData();
+            } ),
           ),
-          body: FutureBuilder<List>(
-            future: databaseHelper.getMyTools(DatabaseHelper.userId),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) print(snapshot.error);
-              return snapshot.hasData
-                  ? ItemList(list: snapshot.data)
-                  : Center(
-                      child: new CircularProgressIndicator(),
-                    );
-            },
-        ));
+          body:RefreshIndicator(
+            onRefresh: getData,
+            child: FutureBuilder<List>(
+              future: list,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) print(snapshot.error);
+                return (DatabaseHelper.mtProducts == 0)
+                ? Center(child: Text('Add your first product'),)
+                : snapshot.hasData
+                    ? ItemList(list: snapshot.data)
+                    : Center(
+                        child: new CircularProgressIndicator(),
+                      );
+              },
+        ),
+          )
+
+    );
   }
 }
 
@@ -74,11 +107,12 @@ class ItemList extends StatefulWidget {
 
 class ItenListState extends State<ItemList> {
   DatabaseHelper databaseHelper = DatabaseHelper();
-
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return ListView.builder(
+    return (DatabaseHelper.mtProducts == 0)
+        ? Center(child: Text("Add your first product"),)
+        : ListView.builder(
         padding: EdgeInsets.all(7.0),
         itemCount: widget.list.length,
         itemBuilder: (context, i) {
@@ -86,19 +120,35 @@ class ItenListState extends State<ItemList> {
             padding: const EdgeInsets.only(bottom: 4),
             child: GestureDetector(
               onTap: () => Navigator.of(context).push(new MaterialPageRoute(
-                builder: (BuildContext context) => AddProduct(
-                    widget.list[i]['ToolID'],
-                    widget.list[i]['ToolName'],
-                    widget.list[i]['ToolDes'],
-                    widget.list[i]['ToolPrice'],
-                    widget.list[i]['PictureLink']),
-              )),
+                builder: (BuildContext context) {
+print ('toolList ${widget.list[i]}');
+                 return AddProduct(
+                      widget.list[i]['ToolID'],
+                      widget.list[i]['ToolName'],
+                      widget.list[i]['ToolDes'],
+                      widget.list[i]['ToolPrice'],
+                      widget.list[i]['PictureLink'],
+                      widget.list[i]['ToolTypeID'],
+                      widget.list[i]['ToolCity']);
+                },
+              )).then((value) {
+                print('resume3 $value');
+                if(value !=null)
+                setState(() {
+                  widget.list[i]['ToolName']=value['ToolName'];
+                  widget.list[i]['ToolDes']=value['ToolDes'];
+                  widget.list[i]['ToolPrice']=value['ToolPrice'];
+                  widget.list[i]['PictureLink']=value['PictureLink'];
+                  widget.list[i]['ToolTypeID']=value['ToolTypeID'];
+                  widget.list[i]['ToolCity']=value['ToolCity'];
+                });
+              }),
               onDoubleTap: () => print(i),
               child: Dismissible(
                 key: UniqueKey(),
                 child: ListTile(
                   title: Text(widget.list[i]['ToolName']),
-                  leading: (widget.list[i]['PictureLink']==null || widget.list[i]['PictureLink']=='')
+                  leading: (widget.list[i]['PictureLink']==null || widget.list[i]['PictureLink']=='' || widget.list[i]['PictureLink']=='0')
                       ? Icon (
                     Icons.announcement,
                     size: 60.0,
@@ -110,9 +160,9 @@ class ItenListState extends State<ItemList> {
                     loadingBuilder: (context,child,progress){
                       return progress==null
                           ? child
-                          : Container(child: CircularProgressIndicator(),
+                          : Container(alignment: Alignment.center, child: CircularProgressIndicator(),
                         width: 80.0,height: 80.0,);
-                    },
+                    }, //Container(alignment: Alignment.center,width:100.0,height:100.0,child: CircularProgressIndicator());
                   ),
                   subtitle: Text('${widget.list[i]['ToolDes']}'),
                   trailing: Text('\$${widget.list[i]['ToolPrice']}'),
@@ -122,6 +172,8 @@ class ItenListState extends State<ItemList> {
                   databaseHelper.DeleteTool(widget.list[i]['ToolID']);
                   setState(() {
                     widget.list.removeAt(i);
+                    if(widget.list.length == 0)
+                      DatabaseHelper.mtProducts = 0;
                   });
                 },
               ),

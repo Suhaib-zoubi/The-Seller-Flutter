@@ -58,7 +58,8 @@ class PostModel {
 class PostsModel {
   Stream<List<PostModel>> stream;
   bool hasMore;
-
+  static String type = '0';
+  static String city = '0';
   bool _isLoading;
   List<Map> _data;
   StreamController<List<Map>> _controller;
@@ -95,7 +96,7 @@ class PostsModel {
     }
     _isLoading = true;
     return databaseHelper
-        .getToolListing(prefs.get(key) ?? "empty")
+        .getToolListing(prefs.get(key) ?? "empty",type,city)
         .then((postsData) async {
       if (postsData == null) {
         hasData = false;
@@ -105,7 +106,7 @@ class PostsModel {
       print('DatabaseHelper.userId ${DatabaseHelper.userId}');
       _isLoading = false;
       _data.addAll(postsData);
-      hasMore = (_data.length < 30);
+      hasMore = (_data.length < DatabaseHelper.hasMore);
       _controller.add(_data);
     });
   }

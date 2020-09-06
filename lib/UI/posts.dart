@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:the_seller/Controllers/databasehelper.dart';
 
 import './post.dart';
+import 'ControlPanel.dart';
 import 'modelsPost.dart';
 
 class Posts extends StatefulWidget {
@@ -10,12 +11,12 @@ class Posts extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _PostsState createState() => _PostsState();
+  PostsState createState() => PostsState();
 }
 
-class _PostsState extends State<Posts> {
+class PostsState extends State<Posts> {
   final scrollController = ScrollController();
-  PostsModel posts;
+  static PostsModel posts;
   DatabaseHelper databaseHelper = DatabaseHelper();
   var delay = 0.0;
 
@@ -33,7 +34,7 @@ class _PostsState extends State<Posts> {
   }
 
   _delay() async {
-    await Future.delayed(Duration(seconds: 0), () {
+    await Future.delayed(Duration(seconds: 1), () {
       setState(() {
         delay = 1.0;
       });
@@ -42,72 +43,78 @@ class _PostsState extends State<Posts> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
+    return RefreshIndicator(
+        onRefresh: posts.refresh,
+        child: StreamBuilder(
       stream: posts.stream,
       builder: (BuildContext _context, AsyncSnapshot _snapshot) {
         if (!_snapshot.hasData) {
           print('connectivityResult :: ${DatabaseHelper.connectivityResult}');
           return Center(
               child: (!DatabaseHelper.connectivityResult)
-                  ? FutureBuilder(
-                      builder: (c, v) {
-                        _delay();
-                        return Opacity(
-                          opacity: delay,
-                          child: Center(
-                              child: Container(
-                                height: 300,
-                                margin: EdgeInsets.all(16.0),
-                                padding: EdgeInsets.all(16.0),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16.0),
-                                  color: Color(0xFF912D2D),
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.error_outline,
-                                      size: 180.0,
-                                      color: Colors.white,
-                                    ),
-                                    Text(
-                                      "Oh no! We can't connect right now!",
-                                      textAlign: TextAlign.center,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headline
-                                          .copyWith(
-                                            color: Colors.white,
-                                          ),
-                                    ),
-                                  ],
-                                ),
+                  ? ListView(children: [FutureBuilder(
+                builder: (c, v) {
+                  _delay();
+                  return Opacity(
+                    opacity: delay,
+                    child: Center(
+                      child: Container(
+                        height: 300,
+                        margin: EdgeInsets.all(16.0),
+                        padding: EdgeInsets.all(16.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16.0),
+                          color: Color(0xFF912D2D),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              size: 180.0,
+                              color: Colors.white,
+                            ),
+                            Text(
+                              "Oh no! We can't connect right now!",
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headline
+                                  .copyWith(
+                                color: Colors.white,
                               ),
-                          ),
-                        );
-                      },
-                    )
-                  : CircularProgressIndicator()
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              )],)
+                  : SingleChildScrollView(child: Container(alignment: Alignment.center,width:100.0,height:100.0,child: CircularProgressIndicator()),)
           );
-        } else if (!DatabaseHelper.connectivityResult) {
-          return Text('No Data');
-        } else {
-          return RefreshIndicator(
-            onRefresh: posts.refresh,
-            child: ListView.separated(
+        }  else {
+          return ListView.separated(
               padding: EdgeInsets.symmetric(vertical: 8.0),
               controller: scrollController,
               separatorBuilder: (context, index) => Divider(),
               itemCount: _snapshot.data.length + 1,
               itemBuilder: (BuildContext _context, int index) {
-                if (index < _snapshot.data.length) {
+                PostModel firstPost = _snapshot.data[0];
+                if(!_snapshot.hasData){
+                  return Text('No have Data');
+                }else if (index < _snapshot.data.length) {
                   return Post(post: _snapshot.data[index]);
                 } else if (posts.hasMore) {
                   return Padding(
                     padding: EdgeInsets.symmetric(vertical: 32.0),
                     child: Center(child: CircularProgressIndicator()),
+                  );
+                } else if (firstPost.dateAdd=='0'){
+                  return Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32.0),
+                    child: Center(child: Text('No items match your search')),
                   );
                 } else {
                   return Padding(
@@ -116,10 +123,10 @@ class _PostsState extends State<Posts> {
                   );
                 }
               },
-            ),
-          );
+            )
+          ;
         }
       },
-    );
+    ));
   }
 }
