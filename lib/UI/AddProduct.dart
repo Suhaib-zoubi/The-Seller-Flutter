@@ -7,13 +7,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:the_seller/Controllers/databasehelper.dart';
 
 class AddProduct extends StatefulWidget {
-  String _product_toolId;
-  String _product_name;
-  String _product_desc;
-  String _product_price;
+  final String _product_toolId;
+  final String _product_name;
+  final String _product_desc;
+  final String _product_price;
   String _product_pictureLink;
-  String _product_toolType;
-  String _product_toolCity;
+  final String _product_toolType;
+  final String _product_toolCity;
 
   AddProduct(
       this._product_toolId,
@@ -35,9 +35,9 @@ class AddProductState extends State<AddProduct> {
   DatabaseHelper databaseHelper = DatabaseHelper();
   File image;
   var path = '';
-  TextEditingController _product_name;
-  TextEditingController _product_desc;
-  TextEditingController _product_price;
+  TextEditingController _productName;
+  TextEditingController _productDesc;
+  TextEditingController _productPrice;
   final Random random = Random();
   String tempToolID = '';
   int valType;
@@ -53,13 +53,11 @@ class AddProductState extends State<AddProduct> {
     // TODO: implement initState
     super.initState();
     databaseHelper.loadData(context);
-    _product_name = TextEditingController(text: widget._product_name);
-    _product_desc = TextEditingController(text: widget._product_desc);
-    _product_price = TextEditingController(text: widget._product_price);
+    _productName = TextEditingController(text: widget._product_name);
+    _productDesc = TextEditingController(text: widget._product_desc);
+    _productPrice = TextEditingController(text: widget._product_price);
     String diceRoll = '${random.nextInt(70000000) + 5000}';
     tempToolID = '${DatabaseHelper.userId}000000$diceRoll';
-    print('type ${widget._product_toolType}');
-    print('city ${widget._product_toolCity}');
     setState(() {
       if (widget._product_toolId != null) if (widget._product_toolType !=
               null ||
@@ -86,9 +84,7 @@ class AddProductState extends State<AddProduct> {
 
       if (widget._product_toolId == null) {
         print('ifStatment');
-        await databaseHelper.UploadImage(base64Image, tempToolID).then((value) {
-          print('cond ${value['type'] == 'Png'}');
-          print('value $value');
+        await databaseHelper.uploadImage(base64Image, tempToolID).then((value) {
           setState(() {
             isPressed = false;
             if (value['type'] == 'error')
@@ -102,7 +98,7 @@ class AddProductState extends State<AddProduct> {
         setState(() {});
       } else {
         print('_pictureLink-1 ${widget._product_pictureLink}');
-        await databaseHelper.UploadImage(base64Image, tempToolID).then((value) {
+        await databaseHelper.uploadImage(base64Image, tempToolID).then((value) {
           print('_pictureLinkValue ${value['PicPath']}');
           print('cond ${value['type'] == 'Png'}');
           setState(() {
@@ -117,19 +113,17 @@ class AddProductState extends State<AddProduct> {
               imageText = 'Please select Png format';
           });
         });
-
-        print('elseStatement');
-        print('_pictureLink0 ${widget._product_pictureLink}');
       }
     }
   }
 
-  _Add() async {
-    await databaseHelper.AddTools(
+  _add() async {
+    await databaseHelper
+        .addProducts(
             DatabaseHelper.userId,
-            _product_name.text,
-            _product_desc.text,
-            _product_price.text,
+            _productName.text,
+            _productDesc.text,
+            _productPrice.text,
             (valType + 1).toString(),
             tempToolID,
             (valCity + 1).toString())
@@ -138,22 +132,23 @@ class AddProductState extends State<AddProduct> {
     });
   }
 
-  _Update() async {
+  _update() async {
     Map map;
     map = {
-      'ToolName': _product_name.text,
-      'ToolDes': _product_desc.text,
-      'ToolPrice': _product_price.text,
+      'ToolName': _productName.text,
+      'ToolDes': _productDesc.text,
+      'ToolPrice': _productPrice.text,
       'PictureLink': widget._product_pictureLink,
       'ToolTypeID': (valType + 1).toString(),
       'ToolCity': (valCity + 1).toString(),
     };
     print('_pictureLink ${widget._product_pictureLink}');
-    await databaseHelper.UpdateTool(
+    await databaseHelper
+        .updateProduct(
             widget._product_toolId,
-            _product_name.text,
-            _product_desc.text,
-            _product_price.text,
+            _productName.text,
+            _productDesc.text,
+            _productPrice.text,
             (valType + 1).toString(),
             widget._product_pictureLink,
             (valCity + 1).toString())
@@ -185,7 +180,7 @@ class AddProductState extends State<AddProduct> {
           children: [
             TextFormField(
               style: TextStyle(fontSize: 15.0, color: Colors.black),
-              controller: _product_name,
+              controller: _productName,
               decoration: InputDecoration(labelText: 'Name'),
               validator: (String value) {
                 if (value.isEmpty)
@@ -199,7 +194,7 @@ class AddProductState extends State<AddProduct> {
             ),
             TextFormField(
               style: TextStyle(fontSize: 15.0, color: Colors.black),
-              controller: _product_desc,
+              controller: _productDesc,
               decoration: InputDecoration(labelText: 'Description'),
               validator: (String value) {
                 if (value.isEmpty)
@@ -213,7 +208,7 @@ class AddProductState extends State<AddProduct> {
             ),
             TextFormField(
               style: TextStyle(fontSize: 15.0, color: Colors.black),
-              controller: _product_price,
+              controller: _productPrice,
               decoration: InputDecoration(labelText: 'Price'),
               validator: (String value) {
                 if (value.isEmpty)
@@ -254,9 +249,9 @@ class AddProductState extends State<AddProduct> {
                         isPressed == false &&
                         valCity != null &&
                         valType != null) if (widget._product_toolId == null)
-                      _Add();
+                      _add();
                     else
-                      _Update();
+                      _update();
                   });
                 },
                 child: widget._product_toolId == null
@@ -307,18 +302,18 @@ class AddProductState extends State<AddProduct> {
     );
   }
 
-  List listType = [
+  List _listType = [
     0,
     1,
     2,
   ];
-  List listValueType = ['Car', 'Phones', 'Clothes'];
-  List listCity = [
+  List _listValueType = ['Car', 'Phones', 'Clothes'];
+  List _listCity = [
     0,
     1,
     2,
   ];
-  List listValueCity = ['Riyadh', 'Dammam', 'Jedah'];
+  List _listValueCity = ['Riyadh', 'Dammam', 'Jedah'];
 
   Widget _createDropdownType() {
     return Container(
@@ -326,7 +321,6 @@ class AddProductState extends State<AddProduct> {
       width: 100.0,
       margin: EdgeInsets.only(top: 16.0),
       decoration: BoxDecoration(
-        // This sets the color of the [DropdownButton] itself
         color: Colors.white,
         borderRadius: BorderRadius.all(Radius.circular(7.0)),
         border: Border.all(
@@ -352,12 +346,12 @@ class AddProductState extends State<AddProduct> {
                 });
               },
               validator: (value) => value == null ? 'field required' : null,
-              items: listType.map((value) {
+              items: _listType.map((value) {
                 return DropdownMenuItem(
                   value: value,
                   child: Container(
                       child: Text(
-                    listValueType[value],
+                    _listValueType[value],
                     style: TextStyle(color: Colors.grey[600]),
                   )),
                 );
@@ -377,7 +371,6 @@ class AddProductState extends State<AddProduct> {
       width: 100.0,
       margin: EdgeInsets.only(top: 16.0),
       decoration: BoxDecoration(
-        // This sets the color of the [DropdownButton] itself
         color: Colors.white,
         borderRadius: BorderRadius.all(Radius.circular(7.0)),
         border: Border.all(
@@ -387,7 +380,6 @@ class AddProductState extends State<AddProduct> {
       ),
       padding: EdgeInsets.symmetric(vertical: 8.0),
       child: Theme(
-        // This sets the color of the [DropdownMenuItem]
         data: Theme.of(context).copyWith(
           canvasColor: Colors.grey[50],
         ),
@@ -403,12 +395,12 @@ class AddProductState extends State<AddProduct> {
                 });
               },
               validator: (value) => value == null ? 'field required' : null,
-              items: listCity.map((value) {
+              items: _listCity.map((value) {
                 return DropdownMenuItem(
                   value: value,
                   child: Container(
                       child: Text(
-                    listValueCity[value],
+                    _listValueCity[value],
                     style: TextStyle(color: Colors.grey[600]),
                   )),
                 );

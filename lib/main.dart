@@ -3,13 +3,8 @@ import 'package:the_seller/UI/Login.dart';
 import 'package:the_seller/UI/MyProductos.dart';
 import 'package:the_seller/UI/Register.dart';
 import 'UI/ControlPanel.dart';
-import 'UI/ShowData.dart';
-
-
-
 import 'dart:async';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -19,14 +14,15 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'The Seller',
       theme: ThemeData(
+        scaffoldBackgroundColor: Colors.white,
         fontFamily: 'Raleway',
         textTheme: Theme.of(context).textTheme.apply(
-          bodyColor: Colors.black,
-          displayColor: Colors.grey[600],
-        ),
+              bodyColor: Colors.black,
+              displayColor: Colors.grey[600],
+            ),
         // This colors the [InputOutlineBorder] when it is selected
         primaryColor: Colors.grey[500],
-        textSelectionHandleColor: Colors.green[500],
+        textSelectionHandleColor: Colors.grey[400],
       ),
       home: SplashScreen(),
       routes: <String, WidgetBuilder>{
@@ -39,30 +35,25 @@ class MyApp extends StatelessWidget {
   }
 }
 
-
-
 class SplashScreen extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
     // TODO: implement createState
     return SplashScreenState();
   }
-
 }
 
 class SplashScreenState extends State<SplashScreen> {
-
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    getData();
+    setDelay();
   }
 
-  Future<Null> getData() async{
-//    Completer<Null> completer=Completer<Null>();
-    await Future.delayed(Duration(seconds: 1),(){
-      Navigator.of(context).pushNamedAndRemoveUntil('/controlPanel', (route) => false);
+  Future<Null> setDelay() async {
+    await Future.delayed(Duration(seconds: 1), () {
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil('/controlPanel', (route) => false);
     });
     return null;
   }
@@ -74,10 +65,9 @@ class SplashScreenState extends State<SplashScreen> {
       body: Center(
         child: Text(
           'The Seller',
-              style: Theme.of(context).textTheme.display1,
+          style: Theme.of(context).textTheme.display1,
         ),
       ),
     );
   }
-
 }

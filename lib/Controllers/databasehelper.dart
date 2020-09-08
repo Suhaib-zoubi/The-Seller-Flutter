@@ -8,174 +8,205 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:the_seller/UI/Login.dart';
 
 class DatabaseHelper {
-  String host='the-seller20200630093320.azurewebsites.net';
-  String webService='/UsersWS.asmx';
+  String host = 'the-seller20200630093320.azurewebsites.net';
+  String webService = '/UsersWS.asmx';
   String serverUrl =
       "https://the-seller20200630093320.azurewebsites.net/UsersWS.asmx";
-  static String userId ;
-  static var connectivityResult=false  ;
+  static String userId;
+
+  static var connectivityResult = false;
+
   final HttpClient _httpClient = HttpClient();
   static var hasMore;
-  static var mtProducts;
+  static var myProducts; //to know when i have zero product to display 'Add your first product' in MyProducts.dart
 
   Future<Map> loginData(String username, String password) async {
-    final uri = Uri.https('$host', '$webService/Login',
-        {'UserName': username, 'Password': password});
-    final res = await _getJson(uri);
-    print('urlLogin $uri');
-    if (res == null ) {
-      print('Error retrieving data.');
+    try {
+      final uri = Uri.https('$host', '$webService/Login',
+          {'UserName': username, 'Password': password});
+      final res = await _getJson(uri);
+      print('urlLogin $uri');
+      if (res == null) {
+        print('Error retrieving data.');
+        return null;
+      }
+      save(res["UserID"].toString());
+      return res;
+    } catch (e) {
+      print(e);
       return null;
     }
-    save(res["UserID"].toString());
-    print('urlLogin $res');
-    return res;
   }
 
   Future<Map> registerData(String username, String password, String email,
       String phoneNumber, String gender) async {
-//    String myUrl = '$serverUrl/Register?UserName=$username&Password=$password'
-//        '&Email=$email&PhoneNumber=$phoneNumber&Logtit=25&Latitle=89&gender=$gender';
-//    http.Response response = await http.get(myUrl);
-//    final res = json.decode(response.body);
-
-   try {
-     final uri = Uri.https('$host', '$webService/Register',
-         {'UserName': username, 'Password': password,
-           'Email' : email, 'PhoneNumber' : phoneNumber,
-           'Logtit' : '25', 'Latitle' : '89',
-           'gender' : gender});
-     final res = await _getJson(uri);
-     print('TEST register');
-     print('urRegister $uri');
-     if (res==null) return null;
-     return res;
-
-   } catch(e){
-     return null;
-   }
-
-  }
-
-  Future<List<Map>> getToolListing(String userId,String toolTypeID, String toolCity) async {
-    final uri = Uri.https('the-seller20200630093320.azurewebsites.net', '/UsersWS.asmx/GetToolListing',
-        {'UserID': userId,
-          'ToolTypeID': toolTypeID, 'ToolID': '0', 'q': '@' , 'ToolCity': toolCity});
-    final res = await _getJson(uri);
-    print('urlGetToolListing $res');
-    if (res == null ) {
-      print('Error retrieving data.');
+    try {
+      final uri = Uri.https('$host', '$webService/Register', {
+        'UserName': username,
+        'Password': password,
+        'Email': email,
+        'PhoneNumber': phoneNumber,
+        'Logtit': '25',
+        'Latitle': '89',
+        // Logtit and Latitle not active until now
+        'gender': gender
+      });
+      final res = await _getJson(uri);
+      print('urRegister $uri');
+      if (res == null) return null;
+      return res;
+    } catch (e) {
+      print(e);
       return null;
     }
-    List toolData=res["ToolData"];
+  }
 
-    hasMore=toolData.length;
-    if (toolData.length==1){
-      List<Map> list;
-      Map map = {
-        "ToolName": res["ToolData"][0]['ToolName'],
-        "PictureLink": res["ToolData"][0]['ToolName'],
-        "ToolDes": res["ToolData"][0]['ToolName'],
-        "ToolPrice": res["ToolData"][0]['ToolName'],
-        "DateAdd": res["ToolData"][0]['ToolName'],
-      };
-      list=[map];
-      return Future.delayed(Duration(seconds: 1), () {
-        return list;
+  Future<List<Map>> getProductListing(
+      String userId, String toolTypeID, String toolCity) async {
+    try {
+      final uri = Uri.https('the-seller20200630093320.azurewebsites.net',
+          '/UsersWS.asmx/GetToolListing', {
+        'UserID': userId,
+        'ToolTypeID': toolTypeID,
+        'ToolID': '0',
+        'q': '@',
+        // 'ToolID': '0' mean get all products and 'q': '@' mean not there any specification in the search
+        'ToolCity': toolCity
       });
-    }
-    if (toolData.length==0)
+      final res = await _getJson(uri);
+      print('urlGetToolListing $uri');
+      if (res == null) {
+        print('Error retrieving data.');
+        return null;
+      }
+
+      List toolData = res["ToolData"];
+      hasMore = toolData.length;
+      if (toolData.length == 1) {
+        List<Map> list;
+        Map map = {
+          "ToolName": res["ToolData"][0]['ToolName'],
+          "PictureLink": res["ToolData"][0]['ToolName'],
+          "ToolDes": res["ToolData"][0]['ToolName'],
+          "ToolPrice": res["ToolData"][0]['ToolName'],
+          "DateAdd": res["ToolData"][0]['ToolName'],
+        };
+        list = [map];
+        return Future.delayed(Duration(seconds: 1), () {
+          return list;
+        });
+      }
+      if (toolData.length == 0)
+        return Future.delayed(Duration(seconds: 1), () {
+          return List<Map>.generate(1, (int index) {
+            return {
+              "ToolName": '',
+              "PictureLink": '',
+              "ToolDes": '',
+              "ToolPrice": '',
+              "DateAdd": '0',
+            };
+          });
+        });
+
       return Future.delayed(Duration(seconds: 1), () {
-        return List<Map>.generate(1, (int index) {
+        return List<Map>.generate(toolData.length, (int index) {
+          print('generate ${toolData.length} and $index');
           return {
-            "ToolName": '',
-            "PictureLink": '',
-            "ToolDes": '',
-            "ToolPrice": '',
-            "DateAdd": '0',
+            "ToolName": res["ToolData"][index]['ToolName'],
+            "PictureLink": '${res["ToolData"][index]['PictureLink']}',
+            "ToolDes": '${res["ToolData"][index]['ToolDes']}',
+            "ToolPrice": '${res["ToolData"][index]['ToolPrice']}',
+            "DateAdd": '${res["ToolData"][index]['DateAdd']}',
           };
         });
       });
-    print('TEST url: $uri');
-    print('TEST length: ${toolData.length}');
-    print('TTToool ${res["ToolData"].toString()}');
-    print('ToolName ${res["ToolData"][1]['ToolName']}');
-    return Future.delayed(Duration(seconds: 1), () {
-      return List<Map>.generate(toolData.length, (int index) {
-        print('generate ${toolData.length} and $index');
-        return {
-          "ToolName": res["ToolData"][index]['ToolName'],
-          "PictureLink": '${res["ToolData"][index]['PictureLink']}',
-          "ToolDes": '${res["ToolData"][index]['ToolDes']}',
-          "ToolPrice": '${res["ToolData"][index]['ToolPrice']}',
-          "DateAdd": '${res["ToolData"][index]['DateAdd']}',
-        };
-      });
-    });
-////  return res["ToolData"];
+    } catch (e) {
+      print(e);
+      return null;
+    }
   }
 
-  Future<List> getMyTools(String userId) async {
-    String myUrl = '$serverUrl/GetMyTool?UserID=$userId';
-    http.Response response = await http.get(myUrl);
-    final res = json.decode(response.body);
-    print('TEST ToolData');
-    print(res["ToolData"]);
-    List list = res["ToolData"];
-    if (list .length==0)
-      mtProducts=0; else mtProducts=1;
-      print('mtProducts $mtProducts');
-    return res["ToolData"];
+  Future<List> getMyProducts(String userId) async {
+    try {
+      String myUrl = '$serverUrl/GetMyTool?UserID=$userId';
+      http.Response response = await http.get(myUrl);
+      final res = json.decode(response.body);
+      List list = res["ToolData"];
+      if (list.length == 0)
+        myProducts = 0;
+      else
+        myProducts = 1;
+      return res["ToolData"];
+    } catch (e) {
+      print(e);
+      return null;
+    }
   }
 
-  Future<Map> UploadImage(String image, String tempToolID) async {
+  Future<Map> uploadImage(String image, String tempToolID) async {
     String myUrl = '$serverUrl/UploadImage';
-    try{
+    try {
       http.Response response = await http
           .post(myUrl, body: {"image": image, "TempToolID": tempToolID});
       var res = json.decode(response.body);
       print('response: $res');
       return res;
-    } catch(c){
-      print('error error');
-      return {
-        'IsAdded': '',
-        'PicPath': '',
-        'type': 'error'};
-       }
-
-
+    } catch (e) {
+      print(e);
+      return {'IsAdded': '', 'PicPath': '', 'type': 'error'};
+    }
   }
 
-  AddTools(String userID, String toolName, String toolDes, String toolPrice,
+  addProducts(String userID, String toolName, String toolDes, String toolPrice,
       String toolTypeID, String tempToolID, String toolCity) async {
-    String myUrl = '$serverUrl/AddTools?'
-        'UserID=$userId&ToolName=$toolName&ToolDes=$toolDes&ToolPrice=$toolPrice'
-        '&ToolTypeID=$toolTypeID&TempToolID=$tempToolID&ToolCity=$toolCity';
-    http.Response response = await http.get(myUrl);
-    final res = json.decode(response.body);
-    print('url: $myUrl');
-    print('AddTools: ${res["IsAdded"]}');
+    try {
+      String myUrl = '$serverUrl/AddTools?'
+          'UserID=$userId&ToolName=$toolName&ToolDes=$toolDes&ToolPrice=$toolPrice'
+          '&ToolTypeID=$toolTypeID&TempToolID=$tempToolID&ToolCity=$toolCity';
+      http.Response response = await http.get(myUrl);
+      final res = json.decode(response.body);
+      print('AddTools: ${res["IsAdded"]}');
+    } catch (e) {
+      print(e);
+      return null;
+    }
   }
 
-  UpdateTool(String toolID, String toolName, String toolDes, String toolPrice,
-      String toolTypeID, String pictureLink, String toolCity) async {
-    String myUrl = '$serverUrl/UpdateTool?'
-        'ToolID=$toolID&ToolName=$toolName&ToolDes=$toolDes&ToolPrice=$toolPrice'
-        '&ToolTypeID=$toolTypeID&PicPath=$pictureLink&ToolCity=$toolCity';
-    http.Response response = await http.get(myUrl);
-    final res = json.decode(response.body);
-    print('url: $myUrl');
-    print('UpdateTool: ${res["IsUpdate"]}');
+  updateProduct(
+      String toolID,
+      String toolName,
+      String toolDes,
+      String toolPrice,
+      String toolTypeID,
+      String pictureLink,
+      String toolCity) async {
+    try {
+      String myUrl = '$serverUrl/UpdateTool?'
+          'ToolID=$toolID&ToolName=$toolName&ToolDes=$toolDes&ToolPrice=$toolPrice'
+          '&ToolTypeID=$toolTypeID&PicPath=$pictureLink&ToolCity=$toolCity';
+      http.Response response = await http.get(myUrl);
+      final res = json.decode(response.body);
+      print('url: $myUrl');
+      print('UpdateTool: ${res["IsUpdate"]}');
+    } catch (e) {
+      print(e);
+      return null;
+    }
   }
 
-  DeleteTool(String toolID) async {
-    String myUrl = '$serverUrl/DeleteTool?'
-        'ToolID=$toolID';
-    http.Response response = await http.get(myUrl);
-    final res = json.decode(response.body);
-    print('url: $myUrl');
-    print('DeleteTool: ${res["IsDelete"]}');
+  deleteProduct(String toolID) async {
+    try {
+      String myUrl = '$serverUrl/DeleteTool?'
+          'ToolID=$toolID';
+      http.Response response = await http.get(myUrl);
+      final res = json.decode(response.body);
+      print('url: $myUrl');
+      print('DeleteTool: ${res["IsDelete"]}');
+    } catch (e) {
+      print(e);
+      return null;
+    }
   }
 
   Future<Map<String, dynamic>> _getJson(Uri uri) async {
@@ -202,17 +233,17 @@ class DatabaseHelper {
 
   loadData(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
-    connectivityResult=await _checkInternetConnectivity();
+    connectivityResult = await _checkInternetConnectivity();
     final key = 'UserID';
-
     print('TEST connectivityResult : $connectivityResult');
+
     userId = await prefs.get(key) ?? "empty";
-    print('TEST read : $userId');
-    if (userId == "empty" ||userId=='0')
+    if (userId == "empty" || userId == '0')
       Navigator.of(context).pushReplacement(MaterialPageRoute(
         builder: (BuildContext context) => Login(),
       ));
   }
+
   _checkInternetConnectivity() async {
     var result = await Connectivity().checkConnectivity();
     if (result == ConnectivityResult.none) {

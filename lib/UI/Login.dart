@@ -1,7 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:the_seller/Controllers/databasehelper.dart';
-import 'package:the_seller/UI/ControlPanel.dart';
+import 'ControlPanel.dart';
 import 'package:the_seller/UI/Register.dart';
 
 class Login extends StatefulWidget {
@@ -16,8 +15,8 @@ class LoginState extends State<Login> {
   final TextEditingController _username = new TextEditingController();
   final TextEditingController _password = new TextEditingController();
   var result = "";
-  DatabaseHelper databaseHelper = DatabaseHelper();
-  var isPressed;
+  DatabaseHelper _databaseHelper = DatabaseHelper();
+  var _isPressed;
   var _currentIndex = 0;
   var _showValidationUserNameError = false;
   var _showValidationPasswordError = false;
@@ -26,8 +25,8 @@ class LoginState extends State<Login> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    databaseHelper.save("empty");
-    isPressed = false;
+    _databaseHelper.save("empty");
+    _isPressed = false;
   }
 
   _updateUserNameValue(String text) {
@@ -54,13 +53,11 @@ class LoginState extends State<Login> {
 
   void _onLogin() async {
     setState(() {
-      isPressed = true;
+      _isPressed = true;
       result = '';
     });
-    print(_username.text.trim().toString());
-    print(_password.text.trim().toString());
 
-    await databaseHelper
+    await _databaseHelper
         .loginData(
             _username.text.trim().toString(), _password.text.trim().toString())
         .then((value) {
@@ -69,137 +66,37 @@ class LoginState extends State<Login> {
       if (value == null)
         setState(() {
           result = "Oh no! We can't connect right now!";
-          isPressed = false;
+          _isPressed = false;
         });
       else {
         if (value["UserID"].toString() == '0') {
           setState(() {
             result = value["Message"];
-            isPressed = false;
-            print('**************$result*************');
-            print('**************${value["UserID"]}*************');
+            _isPressed = false;
           });
-          print('here');
-        }
-        else {
+        } else {
           print('**************${value["UserID"]}*************');
           setState(() {
-            isPressed = false;
+            _isPressed = false;
             _showValidationUserNameError = false;
             _showValidationPasswordError = false;
           });
           Navigator.of(context).pushReplacement(MaterialPageRoute(
             builder: (BuildContext) => ControlPanel(),
           ));
-          print('here2');
-          print(DatabaseHelper.userId);
         }
-      }});
+      }
+    });
   }
 
-  portraitLogin(){
-    return  Center(
-        child: SingleChildScrollView(
-          child: Container(
-            color: Colors.white,
-            child: Padding(
-              padding: EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                    'Complete your shopping',
-                    style: TextStyle(
-                        fontSize: 20.0,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.bold),
-                  ),
-                  Padding(padding: EdgeInsets.all(16.0)),
-                    TextField(
-                      style: Theme.of(context).textTheme.display1,
-                      autofocus: false,
-                      // TextStyle(color: Color(0xFF13566b))
-                      decoration: InputDecoration(
-                        labelStyle: Theme.of(context).textTheme.display1,
-                        labelText: "User Name",
-                        errorText: _showValidationUserNameError
-                            ? 'Invalid UserName entered'
-                            : null,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(0.0),
-                        ),
-                      ),
-                      onChanged: _updateUserNameValue,
-                      controller: _username,
-                    ),
-                  Container(
-                    margin: EdgeInsets.only(top: 16.0),
-                    child: TextField(
-                      style: Theme.of(context).textTheme.display1,
-                      autofocus: false,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        labelStyle: Theme.of(context).textTheme.display1,
-                        labelText: "Password",
-                        errorText: _showValidationPasswordError
-                            ? 'Invalid Password entered'
-                            : null,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(0.0),
-                        ),
-                      ),
-                      onChanged: _updatePasswordValue,
-                      controller: _password,
-                    ),
-                  ),
-                  Padding(padding: EdgeInsets.all(16.0)),
-                  Container(
-                    decoration: BoxDecoration(
-                      // This sets the color of the [DropdownButton] itself
-                      color: Colors.grey[50],
-                      border: Border.all(
-                        color: Colors.grey[400],
-                        width: 1.0,
-                      ),
-                    ),
-                    child: IconButton(
-                      icon: Icon(Icons.arrow_forward),
-                      iconSize: 50.0,
-                      onPressed: (_password.text.isEmpty || _username.text.isEmpty)
-                          ?null
-                          :_onLogin,
-                    ),
-                  ),
-                  Center(
-                    child: Container(
-                      margin: EdgeInsets.only(top: 20.0),
-                      padding: EdgeInsets.all(3.0),
-                      child: isPressed
-                          ? CircularProgressIndicator()
-                          : Text(
-                        "$result",
-                        style:
-                        TextStyle(fontSize: 19.0, color: Colors.pink),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ),
-      ),
-    );
-  }
-
-  landscapeLogin(){
-    return  Center(
+  _login(Orientation orientation) {
+    return Center(
       child: SingleChildScrollView(
         child: Container(
           color: Colors.white,
           child: Padding(
             padding: EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
             child: Column(
-
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Text(
@@ -210,83 +107,9 @@ class LoginState extends State<Login> {
                       fontWeight: FontWeight.bold),
                 ),
                 Padding(padding: EdgeInsets.all(16.0)),
-                Row(
-                  children: [
-                    Expanded(child: Column(children: [
-                      TextField(
-//                        style: Theme.of(context).textTheme.display1,
-                        // TextStyle(color: Color(0xFF13566b))
-                        decoration: InputDecoration(
-//                          labelStyle: Theme.of(context).textTheme.display1,
-                          labelText: "User Name",
-                          errorText: _showValidationUserNameError
-                              ? 'Invalid UserName entered'
-                              : null,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(0.0),
-                          ),
-                        ),
-                        onChanged: _updateUserNameValue,
-                        controller: _username,
-                      ),
-                      Container(
-                        margin: EdgeInsets.only(top: 16.0),
-                        child: TextField(
-//                          style: Theme.of(context).textTheme.display1,
-                          autofocus: false,
-                          obscureText: true,
-                          decoration: InputDecoration(
-//                            labelStyle: Theme.of(context).textTheme.display1,
-                            labelText: "Password",
-                            errorText: _showValidationPasswordError
-                                ? 'Invalid Password entered'
-                                : null,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(0.0),
-                            ),
-                          ),
-                          onChanged: _updatePasswordValue,
-                          controller: _password,
-                        ),
-                      ),
-
-                    ],)),
-                    Expanded(child: Column( children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          // This sets the color of the [DropdownButton] itself
-                          color: Colors.grey[50],
-                          border: Border.all(
-                            color: Colors.grey[400],
-                            width: 1.0,
-                          ),
-                        ),
-                        child: IconButton(
-                          icon: Icon(Icons.arrow_forward),
-                          iconSize: 50.0,
-                          onPressed: (_password.text.isEmpty || _username.text.isEmpty)
-                              ?null
-                              :_onLogin,
-                        ),
-                      ),
-                      Center(
-                        child: Container(
-                          margin: EdgeInsets.only(top: 20.0),
-                          padding: EdgeInsets.all(3.0),
-                          child: isPressed
-                              ? CircularProgressIndicator()
-                              : Text(
-                            "$result",
-                            style:
-                            TextStyle(fontSize: 19.0, color: Colors.pink),
-                          ),
-                        ),
-                      ),
-                    ],))
-
-                  ],
-                ),
-
+                (orientation != Orientation.portrait)
+                    ? _landscapeLogin()
+                    : _portraitLogin()
               ],
             ),
           ),
@@ -294,20 +117,169 @@ class LoginState extends State<Login> {
       ),
     );
   }
+
+  _portraitLogin() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        TextField(
+          style: Theme.of(context).textTheme.display1,
+          autofocus: false,
+          decoration: InputDecoration(
+            labelStyle: Theme.of(context).textTheme.display1,
+            labelText: "User Name",
+            errorText: _showValidationUserNameError
+                ? 'Invalid UserName entered'
+                : null,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(0.0),
+            ),
+          ),
+          onChanged: _updateUserNameValue,
+          controller: _username,
+        ),
+        Container(
+          margin: EdgeInsets.only(top: 16.0),
+          child: TextField(
+            style: Theme.of(context).textTheme.display1,
+            autofocus: false,
+            obscureText: true,
+            decoration: InputDecoration(
+              labelStyle: Theme.of(context).textTheme.display1,
+              labelText: "Password",
+              errorText: _showValidationPasswordError
+                  ? 'Invalid Password entered'
+                  : null,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(0.0),
+              ),
+            ),
+            onChanged: _updatePasswordValue,
+            controller: _password,
+          ),
+        ),
+        Padding(padding: EdgeInsets.all(16.0)),
+        Container(
+          decoration: BoxDecoration(
+            // This sets the color of the [DropdownButton] itself
+            color: Colors.grey[50],
+            border: Border.all(
+              color: Colors.grey[400],
+              width: 1.0,
+            ),
+          ),
+          child: IconButton(
+            icon: Icon(Icons.arrow_forward),
+            iconSize: 50.0,
+            onPressed: (_password.text.isEmpty || _username.text.isEmpty)
+                ? null
+                : _onLogin,
+          ),
+        ),
+        Center(
+          child: Container(
+            margin: EdgeInsets.only(top: 20.0),
+            padding: EdgeInsets.all(3.0),
+            child: _isPressed
+                ? CircularProgressIndicator()
+                : Text(
+                    "$result",
+                    style: TextStyle(fontSize: 19.0, color: Colors.pink),
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  _landscapeLogin() {
+    return Row(
+      children: [
+        Expanded(
+            child: Column(
+          children: [
+            TextField(
+              decoration: InputDecoration(
+                labelText: "User Name",
+                errorText: _showValidationUserNameError
+                    ? 'Invalid UserName entered'
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(0.0),
+                ),
+              ),
+              onChanged: _updateUserNameValue,
+              controller: _username,
+            ),
+            Container(
+              margin: EdgeInsets.only(top: 16.0),
+              child: TextField(
+                autofocus: false,
+                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: "Password",
+                  errorText: _showValidationPasswordError
+                      ? 'Invalid Password entered'
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(0.0),
+                  ),
+                ),
+                onChanged: _updatePasswordValue,
+                controller: _password,
+              ),
+            ),
+          ],
+        )),
+        Expanded(
+            child: Column(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                border: Border.all(
+                  color: Colors.grey[400],
+                  width: 1.0,
+                ),
+              ),
+              child: IconButton(
+                icon: Icon(Icons.arrow_forward),
+                iconSize: 50.0,
+                onPressed: (_password.text.isEmpty || _username.text.isEmpty)
+                    ? null
+                    : _onLogin,
+              ),
+            ),
+            Center(
+              child: Container(
+                margin: EdgeInsets.only(top: 20.0),
+                padding: EdgeInsets.all(3.0),
+                child: _isPressed
+                    ? CircularProgressIndicator()
+                    : Text(
+                        "$result",
+                        style: TextStyle(fontSize: 19.0, color: Colors.pink),
+                      ),
+              ),
+            ),
+          ],
+        ))
+      ],
+    );
+  }
+
   @override
-   build(BuildContext context) {
-      tab (int index, Orientation orientation) {
-     final _tab = [
-      (orientation == Orientation.portrait)
-      ? portraitLogin()
-      : landscapeLogin(),
-     Register(),
-     ];
-     return _tab[index];
+  build(BuildContext context) {
+    tab(int index) {
+      final _tab = [
+        _login(MediaQuery.of(context).orientation),
+        Register(),
+      ];
+      return _tab[index];
     }
+
     assert(debugCheckHasMediaQuery(context));
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0.0,
         title: Text(
@@ -346,7 +318,7 @@ class LoginState extends State<Login> {
           });
         },
       ),
-      body: tab(_currentIndex,MediaQuery.of(context).orientation),
+      body: tab(_currentIndex),
     );
   }
 }
